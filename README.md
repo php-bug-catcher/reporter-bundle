@@ -29,7 +29,7 @@ of the Composer documentation.
 Open a command console, enter your project directory and execute:
 
 ```console
-$ composer require php-sentinel/reporter-bundle
+$ composer require php-bug-catcher/reporter-bundle
 ```
 
 #### versions
@@ -47,7 +47,7 @@ Open a command console, enter your project directory and execute the
 following command to download the latest stable version of this bundle:
 
 ```console
-$ composer require php-sentinel/bug-catcher-reporter-bundle
+$ composer require php-bug-catcher/reporter-bundle
 ```
 
 #### Step 2: Enable the Bundle
