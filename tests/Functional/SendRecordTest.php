@@ -79,6 +79,30 @@ class SendRecordTest extends KernelTestCase
         $this->assertSame($data, $request);
     }
 
+    public function testBugCatcherLogExceptionWithoutMessage()
+    {
+        /** @var BugCatcherInterface $bugCatcher */
+        $bugCatcher = $this->getContainer()->get(BugCatcherInterface::class);
+
+        $bugCatcher->logException(new Exception(""), 200, "uri");
+        $writer = $this->getContainer()->get('test.writer');
+        $this->assertInstanceOf(VoidWriter::class, $writer);
+        $request = $writer->popLastRequest();
+        $this->assertSame(Exception::class, $request['message']);
+    }
+
+    public function testBugCatcherLogRecordWithBlankMessage()
+    {
+        /** @var BugCatcherInterface $bugCatcher */
+        $bugCatcher = $this->getContainer()->get(BugCatcherInterface::class);
+
+        $bugCatcher->logRecord("  \n ", 200, "uri");
+        $writer = $this->getContainer()->get('test.writer');
+        $this->assertInstanceOf(VoidWriter::class, $writer);
+        $request = $writer->popLastRequest();
+        $this->assertSame('Empty log message', $request['message']);
+    }
+
     public function testConsoleUriCatcher()
     {
         /** @var BugCatcherInterface $bugCatcher */

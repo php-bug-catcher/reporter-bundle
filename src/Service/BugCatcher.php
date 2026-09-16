@@ -36,7 +36,7 @@ class BugCatcher implements BugCatcherInterface {
 	public function logRecord(string $message, int $level, ?string $requestUri = null, array $additional = []): void {
         $data = $additional + [
                 "api_uri" => "/api/record_logs",
-                "message" => substr($message, 0, 750),
+                "message" => $this->normalizeMessage($message),
                 "level" => $level,
                 "projectCode" => $this->project,
                 "requestUri" => $requestUri ?? $this->uriCatcher->getUri(),
@@ -49,7 +49,7 @@ class BugCatcher implements BugCatcherInterface {
 
 		$data = [
 			"api_uri" => "/api/record_log_traces",
-			"message" => substr($throwable->getMessage(), 0, 750),
+			"message" => $this->normalizeMessage($throwable->getMessage(), $throwable),
 			"level"       => $level,
 			"projectCode" => $this->project,
 			"requestUri"  => $requestUri??$this->uriCatcher->getUri(),
@@ -59,5 +59,19 @@ class BugCatcher implements BugCatcherInterface {
 		}
         $event = $this->eventDispatcher->dispatch(new RecordWriteEvent($data, $throwable));
         $this->writer->write($event->getData());
+	}
+
+	/**
+	 * A throwable with an empty message is still worth reporting - often it is the one you most
+	 * need to see. The API rejects a blank `message` though, so the whole record would be lost
+	 * and the write would throw back into the application. Fall back to the throwable class,
+	 * which always identifies the error.
+	 */
+	private function normalizeMessage(string $message, ?Throwable $throwable = null): string {
+		if (trim($message) === '') {
+			return $throwable ? $throwable::class : 'Empty log message';
+		}
+
+		return substr($message, 0, 750);
 	}
 }
